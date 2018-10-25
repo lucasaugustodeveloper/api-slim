@@ -61,6 +61,11 @@ $entityManager = EntityManager::create($conn, $config);
  * do container com o nome de em [Entity Manager]
  */
 $container['em'] = $entityManager;
+
+/**
+ * Converte os Exception dento da aplicação
+ * em respostas JSON
+*/
 $container['errorHandler'] = function ($c) {
     return function ($request, $response, $exception) use ($c) {
         $statusCode = $exception->getCode() ? $exception->getCode() : 500;
