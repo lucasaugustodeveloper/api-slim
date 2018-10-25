@@ -8,6 +8,7 @@
 
 use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
+use Psr7Middlewares\Middleware\TrailingSlash;
 
 require './vendor/autoload.php';
 
@@ -75,4 +76,12 @@ $container['errorHandler'] = function ($c) {
     };
 };
 
+
 $app = new \Slim\App($container);
+
+/**
+ * @Middleware Tratamento da / do Request
+ * true - Adiciona a / no final da URL
+ * false - remove a / no final da URL
+*/
+$app->add(new TrailingSlash(false));
