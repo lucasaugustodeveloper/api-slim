@@ -36,7 +36,7 @@ $app->get('/book', function (Request $request, Response $response) use ($app) {
 
 /**
  * Retornando mas informações do livro informado pelo id
- * @var integer
+ * @request curl -X GET http://localhost:8000/book/1
  */
 $app->get('/book/{id}', function (Request $request, Response $response) use ($app) {
     $route = $request->getAttribute('route');
@@ -46,6 +46,13 @@ $app->get('/book/{id}', function (Request $request, Response $response) use ($ap
     $booksRepository = $entityManager->getRepository('App\Models\Entity\Book');
     $book = $booksRepository->find($id);
 
+    /**
+     * Verificar ser o livro existe
+     */
+    if (!book) {
+        throw new Exception("Book not found", 404);
+    }
+
     $return = $response->withJson($book, 200);
 
     return $return;
@@ -53,7 +60,8 @@ $app->get('/book/{id}', function (Request $request, Response $response) use ($ap
 
 /**
  * Cadastra um novo livro <Livro></Livro>
- * @request curl -x POST http://localhost:8000/book -H "Content-type: application/json" -d { "name": "Aplicações web real-time com Node.js", "author": "Caio Ribeiro Pereira" }
+ * @request curl -x POST http://localhost:8000/book -H "Content-type: application/json"
+ *  -d { "name": "Aplicações web real-time com Node.js", "author": "Caio Ribeiro Pereira" }
  */
 $app->post('/book', function (Request $request, Response $response) use ($app) {
     $params = (object) $request->getParams();
@@ -100,6 +108,13 @@ $app->put('/book/{id}', function (Request $request, Response $response) use ($ap
     $entityManager = $this->get('em');
     $booksRepository = $entityManager->getRepository('App\Models\Entity\Book');
     $book = $booksRepository->find($id);
+    
+    /**
+     * Verificar ser o livro existe
+     */
+    if (!book) {
+        throw new Exception("Book not found", 404);
+    }
 
     /**
      * Atualiza e Persiste o Livro
@@ -126,6 +141,13 @@ $app->delete('/book/{id}', function (Request $request, Response $response) use (
      */
     $route = $request->getAttribute('route');
     $id = $route->getArgument('id');
+
+    /**
+     * Verificar ser o livro existe
+     */
+    if (!book) {
+        throw new Exception("Book not found", 404);
+    }
 
     /**
      * Encontra o Livro no Banco
