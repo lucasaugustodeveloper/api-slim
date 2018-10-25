@@ -12,12 +12,21 @@ use Doctrine\ORM\EntityManager;
 require './vendor/autoload.php';
 
 /**
+ * Configurações
+ */
+$configs = [
+    'settings' => [
+        'displayErrorDetail' => true,
+    ]
+];
+
+/**
  * Container Resources do Slim
  * Aqui dentro dele vamos carregar todos as dependencias
  * da nossa aplicação que vão ser consumidas durante a execução
  * da nossa API
  */
-$container = new \Slim\Container;
+$container = new \Slim\Container($configs);
 
 $isDevMode = true;
 
@@ -52,5 +61,13 @@ $entityManager = EntityManager::create($conn, $config);
  * do container com o nome de em [Entity Manager]
  */
 $container['em'] = $entityManager;
+$container['errorHandler'] = function ($c) {
+    return function ($request, $response, $exception) use ($c) {
+        $statusCode = $exception->getCode() ? $exception->getCode() : 500;
+
+        return $c['response']->withStatus($statusCode)
+            ->withJson(['message' => $exception->getMessage()], $statusCode);
+    };
+};
 
 $app = new \Slim\App($container);
