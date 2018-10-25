@@ -143,18 +143,18 @@ $app->delete('/book/{id}', function (Request $request, Response $response) use (
     $id = $route->getArgument('id');
 
     /**
-     * Verificar ser o livro existe
-     */
-    if (!book) {
-        throw new Exception("Book not found", 404);
-    }
-
-    /**
      * Encontra o Livro no Banco
      */
     $entityManager = $this->get('em');
     $booksRepository = $entityManager->getRepository('App\Models\Entity\Book');
     $book = $booksRepository->find($id);
+
+    /**
+     * Verificar ser o livro existe
+     */
+    if (!book) {
+        throw new Exception("Book not found", 404);
+    }
 
     /**
      * Remove a entidade
