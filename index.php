@@ -22,6 +22,13 @@ $app->get('/', function (Request $request, Response $response) use ($app) {
 });
 
 /**
+ * HTTP Auth - Autenticação minimalista para retorna um JWT
+*/
+$app->get('/auth', function (Request $request, Response $response) use ($app) {
+    return $response->withJson(['status' => 'Autenticado!'], 200);
+});
+
+/**
  * Lista de todos os livros
  */
 $app->get('/book', function (Request $request, Response $response) use ($app) {
@@ -50,6 +57,8 @@ $app->get('/book/{id}', function (Request $request, Response $response) use ($ap
      * Verificar ser o livro existe
      */
     if (!book) {
+        $logger = $this->get('logger');
+        $logger->warning("Book {$id} Not Found");
         throw new Exception("Book not found", 404);
     }
 
@@ -71,6 +80,7 @@ $app->post('/book', function (Request $request, Response $response) use ($app) {
      */
     $entityManager = $this->get('em');
 
+
     /**
      * Instância da nossa Entidade
      * preenchida com nossos paramentros
@@ -86,8 +96,10 @@ $app->post('/book', function (Request $request, Response $response) use ($app) {
     $entityManager->persist($book);
     $entityManager->flush();
 
-    $return = $response->withJson($book, 201);
+    $logger = $this->get('logger');
+    $logger->info('Book Created!', array($book));
 
+    $return = $response->withJson($book, 201);
     return $return;
 });
 
@@ -110,9 +122,15 @@ $app->put('/book/{id}', function (Request $request, Response $response) use ($ap
     $book = $booksRepository->find($id);
     
     /**
+     * Monolog Logger
+    */
+    $logger = $this->get('logger');
+    
+    /**
      * Verificar ser o livro existe
      */
     if (!book) {
+        $logger->warning("Book {$id} Not Found - Impossible to update");
         throw new Exception("Book not found", 404);
     }
 
@@ -125,6 +143,8 @@ $app->put('/book/{id}', function (Request $request, Response $response) use ($ap
 
     $entityManager->persist($book);
     $entityManager->flush();
+
+    $logger->info("Book {$id} updated!", array($book));
 
     $return = $response->withJson($book, 200);
 
@@ -150,9 +170,15 @@ $app->delete('/book/{id}', function (Request $request, Response $response) use (
     $book = $booksRepository->find($id);
 
     /**
+     * Monolog Logger
+    */
+    $logger = $this->get('logger');
+
+    /**
      * Verificar ser o livro existe
      */
     if (!book) {
+        $logger->warning("Book {$id} Not Found");
         throw new Exception("Book not found", 404);
     }
 
@@ -161,6 +187,8 @@ $app->delete('/book/{id}', function (Request $request, Response $response) use (
      */
     $entityManager->remove($book);
     $entityManager->flush();
+
+    $logger->info("Book {$id} Deleted", array($book));
 
     $return = $response->withJson(['msg' => "Deletando o livro {$id}"], 204);
 
