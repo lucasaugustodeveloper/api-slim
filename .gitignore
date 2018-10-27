@@ -3,3 +3,4 @@
 .vscode
 *.log
 *.sqlite
+logs
