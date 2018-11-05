@@ -10,8 +10,11 @@ use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 use Psr7Middlewares\Middleware\TrailingSlash;
 use Monolog\Logger;
+use Firebase\JWT\JWT;
 
 require './vendor/autoload.php';
+$dotenv = new \Dotenv\Dotenv(__DIR__);
+$dotenv->load();
 
 /**
  * Configurações
@@ -110,6 +113,11 @@ $entityManager = EntityManager::create($conn, $config);
  */
 $container['em'] = $entityManager;
 
+/*
+ * Token do nosso JWT
+ */
+$container['secretKey'] = $_ENV['KEY_SECRET'];
+
 /**
  * Application Instance
  */
@@ -122,3 +130,33 @@ $app = new \Slim\App($container);
  * false - remove a / no final da URL
 */
 $app->add(new TrailingSlash(false));
+
+/*
+ * Auth Básico HTTP
+ */
+$app->add(new \Tuupola\Middleware\HttpBasicAuthentication([
+    /*
+     * Usuários existentes
+     */
+    "users" => [
+        "root" => "toor"
+    ],
+    /*
+     * Blacklist - libera somente as rotas dentro do array
+     */
+    "path" => ["/auth"],
+]));
+
+/*
+ * Auth Básico do JWT
+ * Whitelist - Bloqueia tudo, e śo libera os
+ * itens dentro do "passthrough"
+ */
+$app->add(new \Tuupola\Middleware\JwtAuthentication([
+    "regexp" => "/(.*)/", // Regex para encontrar o Token nos Headers - Livre
+    "header" => "x-access-token", // O Header que vai conter o token
+    "path" => "/", // Vamos cobrir toda a API a partir do /
+    "passthrough" => ["/auth"], // Vamos adicionar a exceção de cobertura a rota /auth
+    "realm" => "Protected",
+    "secret" => $container['secretKey'] // Nosso secretKey criado
+]));

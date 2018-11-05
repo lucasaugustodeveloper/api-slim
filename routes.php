@@ -1,0 +1,32 @@
+<?php
+/**
+ * Created by PhpStorm.
+ * User: laugusto
+ * Date: 27/10/18
+ * Time: 07:02
+ */
+
+$app->group('/v1', function () {
+    /*
+     * Dentro de v1, o recurso /book
+     */
+    $this->group('/book', function () {
+        $this->get('', '\App\v1\Controllers\BookController:listBook');
+        $this->post('', '\App\v1\Controllers\BookController:createBook');
+
+        /*
+         * Validando se tem um integer no final da URI
+         */
+        $this->get('/{id:[0-9]+}', '\App\v1\Controllers\BookController:viewBook');
+        $this->put('/{id:[0-9]+}', '\App\v1\Controllers\BookController:updateBook');
+        $this->delete('/{id:[0-9]+}', '\App\v1\Controllers\BookController:deleteBook');
+    });
+
+    /**
+     * Dentro do v1, o recurso /auth
+     */
+    $this->group('/auth', function () {
+        $this->get('', \App\v1\Controllers\AuthController::class);
+    });
+
+});
